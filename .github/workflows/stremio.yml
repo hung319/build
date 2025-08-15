@@ -1,9 +1,6 @@
 name: Build Stremio Service
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
