@@ -34,7 +34,7 @@ jobs:
 
       # Upload artifact
       - name: Upload shadowJar artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kotatsu-syncserver-shadowjar
           path: kotatsu-syncserver/build/libs/*.jar
