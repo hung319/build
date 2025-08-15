@@ -35,16 +35,14 @@ jobs:
 
       - name: Build release with bundled features
         working-directory: src
-        run: |
-          cargo build --release --features=bundled
+        run: cargo build --release --features=bundled
 
       - name: Build .deb package
         working-directory: src
-        run: |
-          cargo deb --no-build --features=bundled
+        run: cargo deb --no-build --features=bundled
 
-      - name: Upload .deb to release
-        uses: softprops/action-gh-release@v1
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: stremio-service.deb
-          files: src/target/debian/*.deb
+          name: stremio-service-deb
+          path: src/target/debian/*.deb
