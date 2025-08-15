@@ -24,7 +24,7 @@ jobs:
           . "$HOME/.cargo/env"
 
       - name: Checkout repository
-        run: git clone --recurse-submodules https://github.com/Stremio/stremio-service /src
+        run: git clone https://github.com/Stremio/stremio-service.git /src
 
       - name: Install cargo-deb
         run: |
