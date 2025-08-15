@@ -1,9 +1,9 @@
-name: Build & Release Stremio Service
+name: Build Stremio Service
 
 on:
   push:
-    tags:
-      - "v*" # Tạo release khi push tag dạng v1.0.0
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -37,23 +37,8 @@ jobs:
         working-directory: src
         run: cargo build --release --features=bundled
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Stremio Service ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-
-      - name: Upload binary to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: src/target/release/stremio-service
-          asset_name: stremio-service
-          asset_content_type: application/octet-stream
+          name: stremio-service
+          path: src/target/release/stremio-service
