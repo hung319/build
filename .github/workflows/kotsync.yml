@@ -1,0 +1,43 @@
+name: Build Kotatsu SyncServer
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Cài JDK 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Cài Gradle 8.13+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.13
+
+      # Clone project Kotatsu SyncServer
+      - name: Clone Kotatsu SyncServer
+        run: |
+          git clone https://github.com/KotatsuApp/kotatsu-syncserver.git
+          cd kotatsu-syncserver
+          ./gradlew shadowJar
+
+      # Upload artifact
+      - name: Upload shadowJar artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: kotatsu-syncserver-shadowjar
+          path: kotatsu-syncserver/build/libs/*.jar
