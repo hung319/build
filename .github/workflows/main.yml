@@ -1,0 +1,44 @@
+name: Build Stremio Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:11
+
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y git curl build-essential libgtk-3-dev pkg-config libssl-dev libayatana-appindicator3-dev
+
+      - name: Install Rust
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          . "$HOME/.cargo/env"
+
+      - name: Checkout repository
+        run: git clone --recurse-submodules https://github.com/Stremio/stremio-service /src
+
+      - name: Install cargo-deb
+        run: |
+          . "$HOME/.cargo/env"
+          cargo install cargo-deb
+
+      - name: Build release
+        run: |
+          cd /src
+          . "$HOME/.cargo/env"
+          cargo build --release
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: stremio-service
+          path: /src/target/release/stremio-service
