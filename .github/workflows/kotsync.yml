@@ -10,7 +10,7 @@ jobs:
     steps:
       # Checkout repo
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       # Cài JDK 21
       - name: Set up JDK 21
