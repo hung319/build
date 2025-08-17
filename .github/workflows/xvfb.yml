@@ -1,0 +1,62 @@
+name: Build Xvfb (Non-root, Debian 11 compatible)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-xvfb:
+    runs-on: ubuntu-22.04   # gần với Debian 11, glibc tương thích
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            meson ninja-build pkg-config python3-pip \
+            libpciaccess-dev libpixman-1-dev libxfont2-dev \
+            libxau-dev libxdmcp-dev wget xz-utils build-essential \
+            bison flex
+          pip install --user mako
+
+      - name: Build & Install libdrm
+        run: |
+          mkdir -p $HOME/build && cd $HOME/build
+          wget https://dri.freedesktop.org/libdrm/libdrm-2.4.116.tar.xz
+          tar -xf libdrm-2.4.116.tar.xz
+          cd libdrm-2.4.116
+          meson setup build --prefix=$HOME/.local/xvfb --default-library=shared
+          ninja -C build install
+
+      - name: Build & Install xorgproto
+        run: |
+          cd $HOME/build
+          wget https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2024.1.tar.gz
+          tar -xf xorgproto-2024.1.tar.gz
+          cd xorgproto-2024.1
+          meson setup build --prefix=$HOME/.local/xvfb
+          ninja -C build install
+
+      - name: Build & Install Xorg (Xvfb only)
+        run: |
+          cd $HOME/build
+          wget https://www.x.org/releases/individual/xserver/xorg-server-21.1.13.tar.xz
+          tar -xf xorg-server-21.1.13.tar.xz
+          cd xorg-server-21.1.13
+          meson setup build --prefix=$HOME/.local/xvfb \
+            -Dxvfb=true -Dxnest=false -Dxwayland=false -Dxorg=false
+          ninja -C build install
+
+      - name: Package Xvfb build
+        run: |
+          cd $HOME/.local
+          tar -czf xvfb-debian11.tar.gz xvfb
+          mv xvfb-debian11.tar.gz $GITHUB_WORKSPACE/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xvfb-debian11
+          path: xvfb-debian11.tar.gz
