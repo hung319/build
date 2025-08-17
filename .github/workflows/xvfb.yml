@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-xvfb:
-    runs-on: ubuntu-22.04   # runner gần với Debian 11
+    runs-on: ubuntu-22.04   # gần Debian 11
 
     steps:
       - name: Checkout
@@ -15,34 +15,32 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            pkg-config python3-pip \
+            meson ninja-build pkg-config python3-pip \
             libpciaccess-dev libpixman-1-dev \
             libxau-dev libxdmcp-dev libfreetype6-dev libfontenc-dev \
             x11proto-dev xtrans-dev \
             wget xz-utils build-essential bison flex automake autoconf libtool
           pip install --user mako
 
-      - name: Build & Install libdrm
+      - name: Build & Install libdrm (Meson)
         run: |
           mkdir -p $HOME/build && cd $HOME/build
           wget https://dri.freedesktop.org/libdrm/libdrm-2.4.116.tar.xz
           tar -xf libdrm-2.4.116.tar.xz
           cd libdrm-2.4.116
-          ./configure --prefix=$HOME/.local/xvfb
-          make -j$(nproc)
-          make install
+          meson setup build --prefix=$HOME/.local/xvfb --default-library=shared
+          ninja -C build install
 
-      - name: Build & Install xorgproto
+      - name: Build & Install xorgproto (Meson)
         run: |
           cd $HOME/build
           wget https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2024.1.tar.gz
           tar -xf xorgproto-2024.1.tar.gz
           cd xorgproto-2024.1
-          ./configure --prefix=$HOME/.local/xvfb
-          make -j$(nproc)
-          make install
+          meson setup build --prefix=$HOME/.local/xvfb
+          ninja -C build install
 
-      - name: Build & Install Xorg (Xvfb only)
+      - name: Build & Install Xorg (Autotools, Xvfb only)
         run: |
           cd $HOME/build
           wget https://www.x.org/releases/individual/xserver/xorg-server-21.1.13.tar.xz
