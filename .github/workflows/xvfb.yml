@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-xvfb:
-    runs-on: ubuntu-24.04   # gần với Debian 11, glibc tương thích
+    runs-on: ubuntu-22.04   # gần với Debian 11, glibc tương thích
 
     steps:
       - name: Checkout
@@ -16,9 +16,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             meson ninja-build pkg-config python3-pip \
-            libpciaccess-dev libpixman-1-dev libxfont2-dev \
-            libxau-dev libxdmcp-dev wget xz-utils build-essential \
-            bison flex
+            libpciaccess-dev libpixman-1-dev \
+            libxau-dev libxdmcp-dev libfreetype6-dev libfontenc-dev \
+            wget xz-utils build-essential bison flex
           pip install --user mako
 
       - name: Build & Install libdrm
