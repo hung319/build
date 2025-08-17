@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-xvfb:
-    runs-on: ubuntu-22.04   # gần với Debian 11, glibc tương thích
+    runs-on: ubuntu-24.04   # gần với Debian 11, glibc tương thích
 
     steps:
       - name: Checkout
