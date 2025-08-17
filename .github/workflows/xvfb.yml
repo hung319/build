@@ -1,4 +1,4 @@
-name: Build Xvfb (Non-root, Debian 11 compatible)
+name: Build Xvfb
 
 on:
   workflow_dispatch:
@@ -7,14 +7,13 @@ jobs:
   build-xvfb:
     runs-on: ubuntu-22.04
 
-    env:   # 🔥 set global env cho mọi step
-      PREFIX: $HOME/.local/xvfb
-      PKG_CONFIG_PATH: $HOME/.local/xvfb/lib/pkgconfig:$HOME/.local/xvfb/lib64/pkgconfig
-      LD_LIBRARY_PATH: $HOME/.local/xvfb/lib:$HOME/.local/xvfb/lib64
-      PATH: $HOME/.local/xvfb/bin:$PATH
-
     steps:
-      - name: Checkout (git clone, no tar)
+      - name: Install git and tar
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git tar
+
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -23,54 +22,42 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            meson ninja-build pkg-config python3-pip \
-            libpciaccess-dev libpixman-1-dev \
-            libxau-dev libxdmcp-dev libfreetype6-dev libfontenc-dev \
-            x11proto-dev xtrans-dev \
-            wget xz-utils build-essential bison flex automake autoconf libtool
-          pip install --user mako
+            build-essential \
+            meson \
+            ninja-build \
+            pkg-config \
+            libx11-dev \
+            libxext-dev \
+            libxrender-dev \
+            libxfont-dev \
+            libxau-dev \
+            libxdmcp-dev \
+            libxcb1-dev \
+            libxcb-util-dev \
+            libpixman-1-dev \
+            xutils-dev \
+            libpciaccess-dev \
+            zlib1g-dev \
+            x11proto-dev \
+            x11proto-core-dev \
+            x11proto-xext-dev \
+            x11proto-fonts-dev \
+            libgl1-mesa-dev \
+            libdrm-dev \
+            libxkbfile-dev \
+            libxv-dev
 
-      - name: Build & Install libdrm (Meson)
+      - name: Download Xorg source
         run: |
-          mkdir -p $HOME/build && cd $HOME/build
-          wget https://dri.freedesktop.org/libdrm/libdrm-2.4.116.tar.xz
-          tar -xf libdrm-2.4.116.tar.xz
-          cd libdrm-2.4.116
-          meson setup build --prefix=$PREFIX --default-library=shared
-          ninja -C build install
-
-      - name: Build & Install xorgproto (Meson)
-        run: |
-          cd $HOME/build
-          wget https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2024.1.tar.gz
-          tar -xf xorgproto-2024.1.tar.gz
-          cd xorgproto-2024.1
-          meson setup build --prefix=$PREFIX
-          ninja -C build install
-
-      - name: Build & Install Xorg (Autotools, Xvfb only)
-        run: |
-          cd $HOME/build
           wget https://www.x.org/releases/individual/xserver/xorg-server-21.1.13.tar.xz
           tar -xf xorg-server-21.1.13.tar.xz
           cd xorg-server-21.1.13
-          ./configure --prefix=$PREFIX \
-            --enable-xvfb \
-            --disable-xorg \
-            --disable-xnest \
-            --disable-xwayland \
-            --without-dtrace
+          ./configure --prefix=$HOME/.local --enable-xvfb --disable-xorg --disable-xwayland
           make -j$(nproc)
           make install
 
-      - name: Package Xvfb build
-        run: |
-          cd $HOME/.local
-          tar -czf xvfb-debian11.tar.gz xvfb
-          mv xvfb-debian11.tar.gz $GITHUB_WORKSPACE/
-
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: xvfb-debian11
-          path: xvfb-debian11.tar.gz
+          name: xvfb-binaries
+          path: ~/.local/bin/Xvfb
