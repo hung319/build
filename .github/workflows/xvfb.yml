@@ -7,15 +7,17 @@ jobs:
   build-xvfb:
     runs-on: ubuntu-22.04
 
-    env:   # 🔥 Thiết lập biến môi trường toàn job
+    env:   # 🔥 set global env cho mọi step
       PREFIX: $HOME/.local/xvfb
       PKG_CONFIG_PATH: $HOME/.local/xvfb/lib/pkgconfig:$HOME/.local/xvfb/lib64/pkgconfig
       LD_LIBRARY_PATH: $HOME/.local/xvfb/lib:$HOME/.local/xvfb/lib64
       PATH: $HOME/.local/xvfb/bin:$PATH
 
     steps:
-      - name: Checkout
+      - name: Checkout (git clone, no tar)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install build dependencies
         run: |
