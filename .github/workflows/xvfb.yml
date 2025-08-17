@@ -5,7 +5,13 @@ on:
 
 jobs:
   build-xvfb:
-    runs-on: ubuntu-22.04   # gần Debian 11
+    runs-on: ubuntu-22.04
+
+    env:   # 🔥 Thiết lập biến môi trường toàn job
+      PREFIX: $HOME/.local/xvfb
+      PKG_CONFIG_PATH: $HOME/.local/xvfb/lib/pkgconfig:$HOME/.local/xvfb/lib64/pkgconfig
+      LD_LIBRARY_PATH: $HOME/.local/xvfb/lib:$HOME/.local/xvfb/lib64
+      PATH: $HOME/.local/xvfb/bin:$PATH
 
     steps:
       - name: Checkout
@@ -28,7 +34,7 @@ jobs:
           wget https://dri.freedesktop.org/libdrm/libdrm-2.4.116.tar.xz
           tar -xf libdrm-2.4.116.tar.xz
           cd libdrm-2.4.116
-          meson setup build --prefix=$HOME/.local/xvfb --default-library=shared
+          meson setup build --prefix=$PREFIX --default-library=shared
           ninja -C build install
 
       - name: Build & Install xorgproto (Meson)
@@ -37,7 +43,7 @@ jobs:
           wget https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2024.1.tar.gz
           tar -xf xorgproto-2024.1.tar.gz
           cd xorgproto-2024.1
-          meson setup build --prefix=$HOME/.local/xvfb
+          meson setup build --prefix=$PREFIX
           ninja -C build install
 
       - name: Build & Install Xorg (Autotools, Xvfb only)
@@ -46,7 +52,7 @@ jobs:
           wget https://www.x.org/releases/individual/xserver/xorg-server-21.1.13.tar.xz
           tar -xf xorg-server-21.1.13.tar.xz
           cd xorg-server-21.1.13
-          ./configure --prefix=$HOME/.local/xvfb \
+          ./configure --prefix=$PREFIX \
             --enable-xvfb \
             --disable-xorg \
             --disable-xnest \
