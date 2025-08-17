@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-xvfb:
-    runs-on: ubuntu-22.04   # gần với Debian 11, glibc tương thích
+    runs-on: ubuntu-22.04   # runner gần với Debian 11
 
     steps:
       - name: Checkout
@@ -15,10 +15,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            meson ninja-build pkg-config python3-pip \
+            pkg-config python3-pip \
             libpciaccess-dev libpixman-1-dev \
             libxau-dev libxdmcp-dev libfreetype6-dev libfontenc-dev \
-            wget xz-utils build-essential bison flex
+            x11proto-dev xtrans-dev \
+            wget xz-utils build-essential bison flex automake autoconf libtool
           pip install --user mako
 
       - name: Build & Install libdrm
@@ -27,8 +28,9 @@ jobs:
           wget https://dri.freedesktop.org/libdrm/libdrm-2.4.116.tar.xz
           tar -xf libdrm-2.4.116.tar.xz
           cd libdrm-2.4.116
-          meson setup build --prefix=$HOME/.local/xvfb --default-library=shared
-          ninja -C build install
+          ./configure --prefix=$HOME/.local/xvfb
+          make -j$(nproc)
+          make install
 
       - name: Build & Install xorgproto
         run: |
@@ -36,8 +38,9 @@ jobs:
           wget https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2024.1.tar.gz
           tar -xf xorgproto-2024.1.tar.gz
           cd xorgproto-2024.1
-          meson setup build --prefix=$HOME/.local/xvfb
-          ninja -C build install
+          ./configure --prefix=$HOME/.local/xvfb
+          make -j$(nproc)
+          make install
 
       - name: Build & Install Xorg (Xvfb only)
         run: |
@@ -45,9 +48,14 @@ jobs:
           wget https://www.x.org/releases/individual/xserver/xorg-server-21.1.13.tar.xz
           tar -xf xorg-server-21.1.13.tar.xz
           cd xorg-server-21.1.13
-          meson setup build --prefix=$HOME/.local/xvfb \
-            -Dxvfb=true -Dxnest=false -Dxwayland=false -Dxorg=false
-          ninja -C build install
+          ./configure --prefix=$HOME/.local/xvfb \
+            --enable-xvfb \
+            --disable-xorg \
+            --disable-xnest \
+            --disable-xwayland \
+            --without-dtrace
+          make -j$(nproc)
+          make install
 
       - name: Package Xvfb build
         run: |
