@@ -1,21 +1,22 @@
-# Use a Windows base image
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM debian:11
 
-# Download and install Ngrok
-RUN powershell -Command Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" -OutFile "ngrok.zip" ; \
-    Expand-Archive -Path "ngrok.zip" -DestinationPath "C:\ngrok"
+# Cài mấy gói cần thiết
+RUN apt-get update && apt-get install -y \
+    wget unzip curl gnupg nodejs npm ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set Ngrok authentication token as an environment variable
-ENV NGROK_AUTH_TOKEN="1wOBiyieGdM0TEoffSyszMYCfnL_56xVrqJRj9sZj3Y7FxdpS"
+# Tải và giải nén sv.zip
+WORKDIR /app
+RUN wget https://github.com/hung319/build/releases/download/stremio-service/sv.zip \
+    && unzip sv.zip \
+    && rm sv.zip
 
-# Enable Terminal Server
-RUN powershell -Command Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 ; \
-    Enable-NetFirewallRule -DisplayGroup "Remote Desktop" ; \
-    Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1 ; \
-    Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+# Set ENV cho ffmpeg/ffprobe
+ENV FFMPEG_BIN=ffmpeg
+ENV FFPROBE_BIN=ffprobe
 
-# Expose Ngrok tunnel
-EXPOSE 3389
+# Expose port (nếu server.js cần, ví dụ 8080)
+EXPOSE 11470
 
-# Start Ngrok tunnel
-CMD ["C:\\ngrok\\ngrok.exe", "tcp", "3389"]
+# Chạy app
+CMD ["node", "server.js"]
