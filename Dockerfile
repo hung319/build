@@ -10,8 +10,6 @@ RUN wget https://github.com/hung319/build/releases/download/stremio-service/sv.z
     && unzip sv.zip \
     && rm sv.zip
 
-VOLUME ["/root/.stremio-server"]
-
 # Tạo file .env
 RUN echo "export FFMPEG_BIN=/stremio/ffmpeg" > .env \
     && echo "export FFPROBE_BIN=/stremio/ffprobe" >> .env
