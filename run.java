@@ -1,8 +1,9 @@
-public class RunBash {
+public class run {
     public static void main(String[] args) {
         try {
-            // Chỉ chạy bash, không nhận tham số
-            Process process = new ProcessBuilder("bash")
+            String command = "bash start.sh";
+
+            Process process = new ProcessBuilder("bash", "-c", command)
                     .inheritIO()
                     .start();
 
